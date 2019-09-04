@@ -1,6 +1,7 @@
 import Quartz.CoreGraphics as CG
 from PIL import Image
 import time
+from selenium import webdriver
 import numpy as np
 from pymouse import PyMouse
 from time import sleep
@@ -24,6 +25,12 @@ def ImageGrab(region):
     return image
 
 
+# DRIVER = 'chromedriver'
+# driver = webdriver.Chrome(DRIVER)
+# driver.get('https://tbot.xyz/lumber/#eyJ1IjoxMjEwNTg2OTMsIm4iOiJSYXVmIFlhZ2Zhcm92IiwiZyI6Ikx1bWJlckphY2siLCJjaSI6IjYxNjEzMjA5NTc4NTUzMzY2NzkiLCJpIjoiQWdBQUFQZUhBd0NGTlRjSEFjWVNhX2oxdkI4In1kZGMzOGZiOGE0NGMyMjhjYjhiMTBjNDUzZDgzZDRjOQ==&tgShareScoreUrl=tg%3A%2F%2Fshare_game_score%3Fhash%3D0cuoVAS_p2fw-7aLLFkbFPjQw7gCuVTFrs3cdTPkeNU')
+#
+# button_left = driver.find_element_by_id('button_left')
+# button_right = driver.find_element_by_id('button_right')
 
 # Initialize some basic variables
 m = PyMouse()           # mouse
@@ -36,6 +43,7 @@ branch = [61, 115, 160] # branch color in RGB
 # a little slower. Plus, if the code doesn't work, we have to stop at some point and
 # not run into an infinite loop.
 for i in range(900):
+# while True:
     # Wait till we cut the tree and branch goes down a level. You may as weel play around
     # with this number. Making it smaller, makes lumberjack go faster. However you'll have
     # to change the height(95 px) to bigger number, so that your screenshot can capture
@@ -59,6 +67,8 @@ for i in range(900):
     # play continuously till the speed is perfect.
     if isLeft:
         m.click(232, 685, 1)
+        # button_left.click()
     else:
         m.click(400, 685, 1)
+        # button_right.click()
     sleep(0.0585)

@@ -12,4 +12,3 @@ if __name__ == "__main__":
         cv2.imshow("hello",im)
         cv2.waitKey(1)
         print(type(im))
-#-#

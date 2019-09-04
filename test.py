@@ -23,10 +23,10 @@ GAMMA = 0.99 # decay rate of past observations
 # FINAL_EPSILON = 0.0001 # final value of epsilon
 # INITIAL_EPSILON = 0.0001 # starting value of epsilon
 REPLAY_MEMORY = 50000 # number of previous transitions to remember
-BATCH = 32 # size of minibatch
+BATCH = 4 # size of minibatch
 FRAME_PER_ACTION = 1
 
-OBSERVE = 10000
+OBSERVE = 1000000
 EXPLORE = 3000000
 FINAL_EPSILON = 0.0001
 INITIAL_EPSILON = 0.1
@@ -35,16 +35,18 @@ sizeIm = (80,80)
 
 DRIVER = 'chromedriver'
 driver = webdriver.Chrome(DRIVER)
-driver.get('https://www.gameeapp.com/game/YXu4mYBb?embed=1')
+# driver.get('https://www.gameeapp.com/game/YXu4mYBb?embed=1')
+driver.get('https://www.gameeapp.com/game/XppQFl0-732362133a5c785623a4b35e480f8c7e42547e64#tgShareScoreUrl=tg%3A%2F%2Fshare_game_score%3Fhash%3DSrOhkdi0P48q331ODeGBGhypfubvdav-fpq_nHMG7Cw')
+
 
 
 cv2.namedWindow('images')
 element1 = driver.find_element_by_class_name('this-bg')
-iframe = driver.find_elements_by_name('name-js-app')[0]
+iframe = driver.find_elements_by_class_name('gameFrame')[0]
 el = driver.find_element_by_class_name('this-border')
 
-
 def one_step(input_actions):
+
 
     prev_score = int(el.text.split()[1])
     if sum(input_actions) != 1:
@@ -54,12 +56,10 @@ def one_step(input_actions):
     # input_actions[1] == 1: tap
     if input_actions[1] == 1:
         ActionChains(driver).key_down(Keys.SPACE).key_up(Keys.SPACE).perform()
-        time.sleep(0.05)
-
+        time.sleep(0.1)
     driver.switch_to.frame(iframe)
-
     png_url = driver.execute_script(
-        "return document.getElementById('canvas').toDataURL();")
+        "return document.getElementById('canvas').toDataURL('image/png');")
     # Parse the URI to get only the base64 part
     str_base64 = re.search(r'base64,(.*)', png_url).group(1)
 
@@ -67,11 +67,12 @@ def one_step(input_actions):
     str_decoded = base64.b64decode(str_base64)
     nparr = np.fromstring(str_decoded, np.uint8)
     image_data = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    image_data = image_data[:, :, 0]
-    image_data = cv2.resize(image_data, dsize=sizeIm)
-    th, image_data = cv2.threshold(image_data, 220, 255, cv2.THRESH_BINARY)
+    image_data1 = image_data[:, :, 1]
+    image_data2 = cv2.bitwise_not(image_data[:, :, 0])
+    image_data = cv2.bitwise_or(image_data1,image_data2)
+    image_data = cv2.resize(image_data1, dsize=sizeIm)
+    th, image_data = cv2.threshold(image_data, 125, 255, cv2.THRESH_BINARY)
     image_data = 255 - image_data
-
 
     cv2.imshow('images', image_data)
     cv2.waitKey(1)
@@ -84,7 +85,7 @@ def one_step(input_actions):
         print('Game over')
         reward = -10
         ActionChains(driver).key_down(Keys.SPACE).key_up(Keys.SPACE).perform()
-        time.sleep(0.3)
+        time.sleep(0.5)
     else:
         reward = int(el.text.split()[1]) - prev_score + 0.1
     return image_data, reward, game_over
@@ -149,7 +150,6 @@ def createNetwork():
 #     one_step()
 #
 #
-# driver.quit()
 
 
 def trainNetwork(s, readout, h_fc1, sess):
@@ -280,8 +280,11 @@ def playGame():
     s, readout, h_fc1 = createNetwork()
     trainNetwork(s, readout, h_fc1, sess)
 
+
 def main():
     playGame()
+
+
 
 if __name__ == "__main__":
     main()
